@@ -94,7 +94,7 @@
             const filtered = data.filter(item => 
                 (!tren || item.Tren.toLowerCase().includes(tren)) &&
                 (!linia || item.Linia.toLowerCase().includes(linia)) &&
-                (!estacio || Object.keys(item).some(key => key.toLowerCase().includes(estacio))) &&
+                (!estacio || Object.keys(item).some(key => key.toLowerCase().includes(estacio) && item[key])) &&
                 (!hora || Object.values(item).some(value => typeof value === 'string' && value.includes(hora)))
             );
             
@@ -104,13 +104,13 @@
             if (filtered.length > 0) {
                 document.getElementById('resultContainer').style.display = 'block';
                 filtered.forEach(item => {
-                    Object.keys(item).forEach(estacio => {
-                        if (item[estacio] && estacio !== 'Tren' && estacio !== 'Linia') {
+                    Object.keys(item).forEach(station => {
+                        if (station !== 'Tren' && station !== 'Linia' && item[station]) {
                             const row = `<tr>
                                 <td>${item.Tren}</td>
                                 <td>${item.Linia}</td>
-                                <td>${estacio}</td>
-                                <td>${item[estacio]}</td>
+                                <td>${station}</td>
+                                <td>${item[station]}</td>
                             </tr>`;
                             tbody.innerHTML += row;
                         }
