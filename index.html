@@ -262,6 +262,14 @@
             };
         }
         
+        function clearFilters() {
+            elements.tren.value = '';
+            elements.linia.value = '';
+            elements.estacio.value = '';
+            elements.hora.value = '';
+            elements.resultContainer.style.display = 'none';
+        }
+        
         function filterData() {
             const filters = {
                 tren: elements.tren.value.toLowerCase(),
@@ -303,3 +311,29 @@
                 filtered.forEach(entry => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
+                        <td>${entry.tren}</td>
+                        <td>${entry.linia}</td>
+                        <td>${entry.estacio}</td>
+                        <td>${entry.hora}</td>
+                    `;
+                    fragment.appendChild(row);
+                });
+            }
+            
+            tbody.innerHTML = '';
+            tbody.appendChild(fragment);
+            elements.resultContainer.style.display = 'block';
+        }
+
+        // Event Listeners
+        elements.tren.addEventListener('input', debounce(filterData, DEBOUNCE_DELAY));
+        elements.linia.addEventListener('input', debounce(filterData, DEBOUNCE_DELAY));
+        elements.estacio.addEventListener('input', debounce(filterData, DEBOUNCE_DELAY));
+        elements.hora.addEventListener('input', debounce(filterData, DEBOUNCE_DELAY));
+        elements.clearFilters.addEventListener('click', clearFilters);
+        
+        // Inicialitzar
+        loadData();
+    </script>
+</body>
+</html>
