@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cerca de Trens</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .result-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            display: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h2>Cerca de Trens</h2>
+    <input type="text" id="tren" placeholder="Cerca per tren...">
+    <input type="text" id="linia" placeholder="Cerca per línia...">
+    <input list="estacions" id="estacio" placeholder="Cerca per estació...">
+    <datalist id="estacions">
+        <option value="MG - Magòria">
+        <option value="IC - Ildefons Cerdà">
+        <option value="EU - Europa">
+        <option value="GO - Gornal">
+        <option value="SP - Sant Josep">
+        <option value="LH - L'Hospitalet">
+    </datalist>
+    <input type="text" id="hora" placeholder="Hora de pas...">
+    
+    <div class="result-container" id="resultContainer">
+        <table id="resultats">
+            <thead>
+                <tr>
+                    <th>Tren</th>
+                    <th>Línia</th>
+                    <th>Estació</th>
+                    <th>Hora</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td colspan="4" style="text-align: center;">Introdueix algun criteri de cerca.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <script>
+        let data = [];
+        
+        async function loadData() {
+            try {
+                const response = await fetch('itinerari_json.json');
+                data = await response.json();
+            } catch (error) {
+                console.error('Error carregant les dades:', error);
+            }
+        }
+        
+        function filterData() {
+            const tren = document.getElementById('tren').value.toLowerCase();
+            const linia = document.getElementById('linia').value.toLowerCase();
+            const estacio = document.getElementById('estacio').value.toLowerCase();
+            const hora = document.getElementById('hora').value.toLowerCase();
+            
+            const filtered = data.filter(item => 
+                (!tren || item.Tren.toLowerCase().includes(tren)) &&
+                (!linia || item.Linia.toLowerCase().includes(linia)) &&
+                (!estacio || Object.keys(item).some(key => key.toLowerCase().includes(estacio))) &&
+                (!hora || Object.values(item).some(value => typeof value === 'string' && value.includes(hora)))
+            );
+            
+            const tbody = document.querySelector('#resultats tbody');
+            tbody.innerHTML = '';
+            
+            if (filtered.length > 0) {
+                document.getElementById('resultContainer').style.display = 'block';
+                filtered.forEach(item => {
+                    Object.keys(item).forEach(estacio => {
+                        if (item[estacio] && estacio !== 'Tren' && estacio !== 'Linia') {
+                            const row = `<tr>
+                                <td>${item.Tren}</td>
+                                <td>${item.Linia}</td>
+                                <td>${estacio}</td>
+                                <td>${item[estacio]}</td>
+                            </tr>`;
+                            tbody.innerHTML += row;
+                        }
+                    });
+                });
+            } else {
+                document.getElementById('resultContainer').style.display = 'none';
+            }
+        }
+        
+        document.getElementById('tren').addEventListener('input', filterData);
+        document.getElementById('linia').addEventListener('input', filterData);
+        document.getElementById('estacio').addEventListener('input', filterData);
+        document.getElementById('hora').addEventListener('input', filterData);
+        
+        loadData();
+    </script>
+</body>
+</html>
