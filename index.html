@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cerca de Trens</title>
+    <title>Itinerari LA51_1</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@200..700&display=swap">
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -14,12 +16,30 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', Arial, sans-serif;
             max-width: 800px;
             margin: auto;
             padding: 20px;
             background-color: var(--background-color);
             color: var(--primary-color);
+        }
+
+        h1 {
+            font-family: 'Roboto', Arial, sans-serif;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 400;
+            /*margin-top: 50px;*/
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            /*font-family: 'Roboto', Arial, sans-serif;*/
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: 400;
+           /* margin-top: 50px;*/
+            margin-bottom: 1rem;
         }
 
         .search-container {
@@ -33,7 +53,7 @@
 
         label {
             margin-bottom: 0.25rem;
-            font-weight: bold;
+            font-weight: normal;
             font-size: 0.9rem;
         }
 
@@ -55,11 +75,11 @@
 
         .result-container {
             background: white;
-            padding: 20px;
+            padding: 5px 10px 5px 10px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             margin-top: 20px;
-	    display: none;
+	        display: none;
         }
 
         .result-container.visible {
@@ -75,8 +95,11 @@
 
         th, td {
             border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
+            padding: 5px 5px 5px 5px;
+            text-align: center;                   
+            font-size: .9rem;
+            font-weight: 400;
+            letter-spacing: 0.1rem;
         }
 
         th {
@@ -187,6 +210,7 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
             margin-top: 1rem;
+            letter-spacing: 0.05rem;
         }
 
         #loadMoreButton:hover {
@@ -195,7 +219,7 @@
     </style>
 </head>
 <body>
-    <h1 style="text-align: center;">Cerca de Trens</h1>
+    <h1 style="text-align: center;">Itinerari LA51_1 feiners</h1>
     
     <div class="search-container">
         <!-- Nova fila per a Tren, Línia i A/D -->
@@ -236,13 +260,7 @@
                    placeholder="Cerca per estació..." 
                    aria-label="Cerca per estació">
             <datalist id="estacions">
-                <option value="PE">Pl. Espanya</option>
-                <option value="MG">Magòria</option>
-                <option value="IC">Ildefons Cerdà</option>
-                <option value="EU">Europa</option>
-                <option value="GO">Gornal</option>
-                <option value="SP">Sant Josep</option>
-                <option value="LH">L'Hospitalet</option>
+               <!-- Las opciones se cargarán dinámicamente -->
             </datalist>
         </div>
 
@@ -290,6 +308,27 @@
     </div>
 
     <script>
+        // Función para cargar las estaciones desde el fichero JSON
+        function cargarEstaciones() {
+            fetch('estacions.json')
+                .then(response => response.json())
+                .then(data => {
+                    const datalist = document.getElementById('estacions');
+                    data.forEach(estacion => {
+                        const option = document.createElement('option');
+                        option.value = estacion.value;
+                        option.textContent = estacion.name;
+                        datalist.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error cargando las estaciones:', error));
+        }
+    
+        // Llamar a la función para cargar las estaciones cuando la página se cargue
+        window.onload = cargarEstaciones;
+    </script>
+
+    <script>
         function updateTableTitle() {
             const select = document.getElementById('ad');
             const title = document.getElementById('table-title');
@@ -304,8 +343,9 @@
             }
         }
     </script>
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    
     <script>
         let data = [];
         let currentPage = 0; // Índex de la pàgina actual
@@ -415,7 +455,14 @@
     		return results.sort((a, b) => {
         	    const timeA = convertTimeToMinutes(a.hora);
         	    const timeB = convertTimeToMinutes(b.hora);
-        	    return timeA - timeB;
+        	// Si un tren comienza antes de la medianoche y el otro después, ajustamos la comparación
+        	if (timeA < 720 && timeB >= 720) { // 720 minutos = 12:00 PM
+         	   return 1; // El tren que comienza antes de la medianoche va después
+       		 } else if (timeA >= 720 && timeB < 720) {
+       		     return -1; // El tren que comienza después de la medianoche va antes
+       		 } else {
+         	   return timeA - timeB; // Orden normal si ambos están en el mismo periodo
+      		  }
     		});
 	} 
         
