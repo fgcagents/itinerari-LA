@@ -75,7 +75,7 @@ function convertTimeToMinutes(timeStr) {
 }
 
 // Funció per carregar dades
-async function loadData(filename = 'itinerari_LA51_1_0_1_asc_desc.json') {
+async function loadData(filename = 'itinerari_LA51_2_0_1_asc_desc.json') {
     try {
         elements.loading.classList.add('visible');
         const response = await fetch(filename);
@@ -210,7 +210,7 @@ function filterData() {
     
     filteredData = data.flatMap(item => 
         Object.keys(item)
-            .filter(key => key !== 'Tren' && key !== 'Linia' && key !== 'A/D' && item[key])
+            .filter(key => !['Tren', 'Linia', 'A/D', 'Serveis', 'Torn', 'Tren_S'].includes(key) && item[key])
             .map(station => ({
                 tren: item.Tren,
                 linia: item.Linia,
