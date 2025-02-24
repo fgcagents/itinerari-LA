@@ -245,6 +245,33 @@ function filterData() {
     updateTable();
 }
 
+// Función auxiliar canvi color antes de updateTable
+function shouldHighlightTime(entry) {
+    // Define las estaciones para cada línea
+    const r5Stations = ["MV", "CL", "CG"];
+    const r6Stations = ["MV", "CL"];
+    const r50Stations = ["MG", "ML", "CG", "CL", "CR", "QC", "PL", "MV", "ME", "AE", "CB"];
+    const r60Stations = ["MG", "ML", "CG", "CR", "QC", "PA", "PL", "MV", "ME", "BE", "CP"];
+
+    // Define los trenes específicos que deben cumplir la condición
+    const specificTrains = ["N334", "P336", "P362", "N364", "P364", "N366", "P366"];
+
+    // Comprueba la línea y las estaciones correspondientes
+    const isR5 = entry.linia === "R5" && r5Stations.includes(entry.estacio);
+    const isR6 = entry.linia === "R6" && r6Stations.includes(entry.estacio);
+    const isR50 = entry.linia === "R50" && r50Stations.includes(entry.estacio);
+    const isR60 = entry.linia === "R60" && r60Stations.includes(entry.estacio);
+
+    // Comprueba si es uno de los trenes específicos y es descendente
+    const isSpecificTrain = specificTrains.includes(entry.tren);
+    const isDescendente = entry.ad === "D";
+    
+    // Retorna true si:
+    // - Es R5, R6, R50 o R60 en sus estaciones correspondientes
+    // - Y NO es uno de los trenes específicos en sentido descendente
+    return (isR5 || isR6 || isR50 || isR60) && !(isSpecificTrain && isDescendente);
+}
+
 // Funció per actualitzar la taula
 function updateTable() {
     const tbody = elements.resultats.querySelector('tbody');
@@ -263,12 +290,16 @@ function updateTable() {
     itemsToShow.forEach((entry, index) => {
         const row = document.createElement('tr');
         const rowNumber = startIndex + index + 1;
+
+        // Determinar si se debe resaltar la hora
+        const horaClass = shouldHighlightTime(entry) ? 'highlighted-time' : '';
+
         row.innerHTML = `
             <td class="row-number">${rowNumber}</td>
             <td>${entry.ad}</td>
             <td>${entry.tren}</td>
             <td>${entry.estacio}</td>
-            <td>${entry.hora}</td>
+            <td class="${horaClass}">${entry.hora}</td>
             <td>${entry.linia}</td>
         `;
         fragment.appendChild(row);
