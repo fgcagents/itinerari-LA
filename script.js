@@ -249,7 +249,7 @@ function filterData() {
 function shouldHighlightTime(entry) {
     // Define las estaciones para cada línea
     const r5Stations = ["MV", "CL", "CG"];
-    const r6Stations = ["MV", "CL"];
+    const r6Stations = ["MV", "CG"];
     const r50Stations = ["MG", "ML", "CG", "CL", "CR", "QC", "PL", "MV", "ME", "AE", "CB"];
     const r60Stations = ["MG", "ML", "CG", "CR", "QC", "PA", "PL", "MV", "ME", "BE", "CP"];
 
