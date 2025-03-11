@@ -231,6 +231,11 @@ footer {
     margin-right: auto;
 }
 
+/* Por defecto, ocultar las columnas extra */
+.extra-col {
+    display: none;
+}
+
 /* Estilos para la columna de numeración */
 .row-number {
     width: 2.5rem;
@@ -246,6 +251,13 @@ th.row-number {
 }
 
 /* Optimización para móviles */
+
+/* Mostrar columnas extra en pantallas de PC o en móviles en orientación horizontal */
+@media only screen and (min-width: 768px), only screen and (orientation: landscape) {
+    .extra-col {
+        display: table-cell;
+    }
+}
 @media screen and (max-width: 768px) {
     body {
         padding: 10px;
