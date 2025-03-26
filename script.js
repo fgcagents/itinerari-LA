@@ -12,6 +12,7 @@ const elements = {
     linia: document.getElementById('linia'),
     ad: document.getElementById('ad'),
     estacio: document.getElementById('estacio'),
+    torn: document.getElementById('torn'), // Nuevo filtro para Torn
     horaInici: document.getElementById('horaInici'),
     horaFi: document.getElementById('horaFi'),
     resultContainer: document.getElementById('resultContainer'),
@@ -74,20 +75,6 @@ const timeToMinutes = timeStr => {
     return hours * 60 + minutes;
 };
 
-/*
-const convertTimeToMinutes = timeStr => {
-    if (!timeStr) return null;
-    let [hours, minutes] = timeStr.split(':').map(Number);
-    const timeLower = timeStr.toLowerCase();
-    if (timeLower.includes('pm') && hours < 12) {
-        hours += 12;
-    } else if (timeLower.includes('am') && hours === 12) {
-        hours = 0;
-    }
-    return hours * 60 + minutes;
-};
-*/
-
 // Función para cargar datos desde un archivo dado
 async function loadData(filename = 'itinerari_LA51_2_0_1_asc_desc.json') {
     try {
@@ -140,6 +127,7 @@ function clearFilters() {
     elements.linia.value = '';
     elements.ad.value = '';
     elements.estacio.value = '';
+    elements.torn.value = ''; // Limpiar filtro Torn
     elements.horaInici.value = '';
     elements.horaFi.value = '';
     elements.resultContainer.style.display = 'none';
@@ -182,6 +170,7 @@ function filterData() {
         linia: elements.linia.value.trim(),
         ad: elements.ad.value.trim(),
         estacio: elements.estacio.value.trim(),
+        torn: elements.torn.value.trim(), // Nuevo filtro
         horaInici: elements.horaInici.value.trim(),
         horaFi: elements.horaFi.value.trim()
     };
@@ -197,6 +186,116 @@ function filterData() {
     const horaIniciMin = timeToMinutes(filters.horaInici);
     const horaFiMin = timeToMinutes(filters.horaFi);
 
+    if (filters.linia && !filters.estacio) {
+        const seenTrains = new Set();
+        filteredData = data
+            .filter(item => item.Linia.toLowerCase().includes(filters.linia.toLowerCase()))
+            .flatMap(item => {
+                if (seenTrains.has(item.Tren)) return [];
+                
+                const stations = Object.keys(item)
+                    .filter(key => !['Tren', 'Linia', 'A/D', 'Serveis', 'Torn', 'Tren_S'].includes(key) && item[key])
+                    .sort((a, b) => {
+                        const tA = timeToMinutes(item[a]);
+                        const tB = timeToMinutes(item[b]);
+                        return tA - tB;
+                    });
+
+                for (const station of stations) {
+                    const timeMin = timeToMinutes(item[station]);
+                    let matchesTimeRange = true;
+
+                    if (horaIniciMin !== null) {
+                        if (horaFiMin === null) {
+                            if (timeMin < horaIniciMin && timeMin < 240) {
+                                matchesTimeRange = true;
+                            } else {
+                                matchesTimeRange = timeMin >= horaIniciMin;
+                            }
+                        } else {
+                            if (horaIniciMin > horaFiMin) {
+                                matchesTimeRange = timeMin >= horaIniciMin || timeMin <= horaFiMin;
+                            } else {
+                                matchesTimeRange = timeMin >= horaIniciMin && timeMin <= horaFiMin;
+                            }
+                        }
+                    }
+
+                    if (matchesTimeRange) {
+                        seenTrains.add(item.Tren);
+                        return [{
+                            tren: item.Tren,
+                            linia: item.Linia,
+                            ad: item['A/D'],
+                            torn: item.Torn,
+                            tren_s: item.Tren_S,
+                            estacio: station,
+                            hora: item[station]
+                        }];
+                    }
+                }
+                return [];
+            })
+            .filter(entry => (
+                (!filters.tren || entry.tren.toLowerCase().includes(filters.tren.toLowerCase())) &&
+                (!filters.ad || entry.ad === filters.ad) &&
+                (!filters.torn || entry.torn.toLowerCase().includes(filters.torn.toLowerCase()))
+            ));
+    } else if (filters.torn) {
+        // Si se filtra por Torn, se lista un SOLO registro por cada tren cuyo Torn coincida,
+        // tomando la estación con el horario más bajo
+        filteredData = data
+            .filter(item => item.Torn && item.Torn.toLowerCase().includes(filters.torn.toLowerCase()))
+            .map(item => {
+                const stations = Object.keys(item)
+                    .filter(key => !['Tren', 'Linia', 'A/D', 'Serveis', 'Torn', 'Tren_S'].includes(key) && item[key])
+                    .sort((a, b) => {
+                        const tA = timeToMinutes(item[a]);
+                        const tB = timeToMinutes(item[b]);
+                        return tA - tB;
+                    });
+                if (stations.length > 0) {
+                    const selectedStation = stations[0];
+                    return {
+                        tren: item.Tren,
+                        linia: item.Linia,
+                        ad: item['A/D'],
+                        torn: item.Torn,
+                        tren_s: item.Tren_S,
+                        estacio: selectedStation,
+                        hora: item[selectedStation]
+                    };
+                }
+            })
+            .filter(entry => {
+                if (!entry) return false;
+                const entryTimeMin = timeToMinutes(entry.hora);
+                let matchesTimeRange = true;
+                if (horaIniciMin !== null) {
+                    if (horaFiMin === null) {
+                        if (entryTimeMin < horaIniciMin && entryTimeMin < 240) {
+                            matchesTimeRange = true;
+                        } else {
+                            matchesTimeRange = entryTimeMin >= horaIniciMin;
+                        }
+                    } else {
+                        if (horaIniciMin > horaFiMin) {
+                            matchesTimeRange = entryTimeMin >= horaIniciMin || entryTimeMin <= horaFiMin;
+                        } else {
+                            matchesTimeRange = entryTimeMin >= horaIniciMin && entryTimeMin <= horaFiMin;
+                        }
+                    }
+                }
+                return (
+                    (!filters.tren || entry.tren.toLowerCase().includes(filters.tren.toLowerCase())) &&
+                    (!filters.linia || entry.linia.toLowerCase().includes(filters.linia.toLowerCase())) &&
+                    (!filters.ad || entry.ad === filters.ad) &&
+                    (!filters.estacio || entry.estacio.toLowerCase().includes(filters.estacio.toLowerCase())) &&
+                    matchesTimeRange
+                );
+            });
+    } else {
+    // Sin filtro Torn, se listan todas las estaciones (itinerario completo)
     filteredData = data.flatMap(item =>
         Object.keys(item)
             .filter(key => !['Tren', 'Linia', 'A/D', 'Serveis', 'Torn', 'Tren_S'].includes(key) && item[key])
@@ -209,8 +308,6 @@ function filterData() {
                 estacio: station,
                 hora: item[station]
             }))
-
-        // Dins de filterData, en el .filter de cada entrada:
         .filter(entry => {
             const entryTimeMin = timeToMinutes(entry.hora);
             let matchesTimeRange = true;
@@ -223,7 +320,7 @@ function filterData() {
                         // Probablemente es un tren de después de medianoche
                         matchesTimeRange = true;
                     } else {
-                        // Tren normal después de la hora de inicio
+// Tren normal después de la hora de inicio
                         matchesTimeRange = entryTimeMin >= horaIniciMin;
                     }
                 } else {
@@ -241,27 +338,12 @@ function filterData() {
                 (!filters.linia || entry.linia.toLowerCase().includes(filters.linia.toLowerCase())) &&
                 (!filters.ad || entry.ad === filters.ad) &&
                 (!filters.estacio || entry.estacio.toLowerCase().includes(filters.estacio.toLowerCase())) &&
+                (!filters.torn || entry.torn.toLowerCase().includes(filters.torn.toLowerCase())) && // Filtro para Torn
                 matchesTimeRange
             );
         })  
-            /*
-            .filter(entry => {
-                const entryTimeMin = convertTimeToMinutes(entry.hora);
-                let matchesTimeRange = true;
-                if (horaIniciMin !== null) {
-                    matchesTimeRange = horaFiMin === null ? entryTimeMin >= horaIniciMin : (entryTimeMin >= horaIniciMin && entryTimeMin <= horaFiMin);
-                }
-                return (
-                    (!filters.tren || entry.tren.toLowerCase().includes(filters.tren.toLowerCase())) &&
-                    (!filters.linia || entry.linia.toLowerCase().includes(filters.linia.toLowerCase())) &&
-                    (!filters.ad || entry.ad === filters.ad) &&
-                    (!filters.estacio || entry.estacio.toLowerCase().includes(filters.estacio.toLowerCase())) &&
-                    matchesTimeRange
-                );
-            })
-            */
     );
-
+    }
     filteredData = sortResultsByTime(filteredData);
     updateTable();
 }
@@ -288,13 +370,30 @@ function updateTable() {
         row.innerHTML = `
             <td class="row-number">${rowNumber}</td>
             <td>${entry.ad}</td>
-            <td>${entry.tren}</td>
+            <td><a href="#" class="train-link" data-train="${entry.tren}">${entry.tren}</a></td>
             <td>${entry.estacio}</td>
             <td class="${horaClass}">${entry.hora}</td>
             <td>${entry.linia}</td>
             <td class="extra-col">${entry.torn}</td>
-            <td class="extra-col">${entry.tren_s}</td>
+            <td class="extra-col"><a href="#" class="train-s-link" data-train="${entry.tren_s}">${entry.tren_s}</a></td>
         `;
+        // Listener para el enlace del tren principal
+        const trainLink = row.querySelector('.train-link');
+        trainLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            clearFilters(); // Limpiar filtros existentes
+            elements.tren.value = entry.tren;
+            filterData();
+        });
+        // Listener para el enlace del tren_s
+        const trainSLink = row.querySelector('.train-s-link');
+        trainSLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            clearFilters(); // Limpiar filtros existentes
+            elements.tren.value = entry.tren_s;
+            filterData();
+        });
+
         fragment.appendChild(row);
     });
 
@@ -326,6 +425,7 @@ function initInputListeners() {
     elements.linia.addEventListener('input', debounce(filterData, DEBOUNCE_DELAY));
     elements.ad.addEventListener('change', debounce(filterData, DEBOUNCE_DELAY));
     elements.estacio.addEventListener('input', debounce(filterData, DEBOUNCE_DELAY));
+    elements.torn.addEventListener('input', debounce(filterData, DEBOUNCE_DELAY)); // Nuevo listener para Torn
     elements.horaInici.addEventListener('input', debounce(filterData, DEBOUNCE_DELAY));
     elements.horaFi.addEventListener('input', debounce(filterData, DEBOUNCE_DELAY));
     elements.clearFilters.addEventListener('click', clearFilters);

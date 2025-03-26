@@ -235,6 +235,19 @@ footer {
 .extra-col {
     display: none;
 }
+/* Todos los enlaces dentro de elementos que tengan la clase extra-col
+recibirán los mismos estilos que definiste para .train-link.*/
+.extra-col a {
+    color: rgb(46, 46, 78);
+    text-decoration: none;
+    border-bottom: 1px dashed rgb(46, 46, 78);
+    cursor: pointer;
+}
+
+.extra-col a:hover {
+    border-bottom: 1px solid rgb(46, 46, 78);
+    color: var(--secondary-color);
+}
 
 /* Estilos para la columna de numeración */
 .row-number {
@@ -296,4 +309,16 @@ th.row-number {
 .result-container {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+}
+
+a.train-link {
+    color: rgb(46, 46, 78);
+    text-decoration: none;
+    border-bottom: 1px dashed rgb(46, 46, 78);
+    cursor: pointer;
+}
+
+a.train-link:hover {
+    border-bottom: 1px solid rgb(46, 46, 78);
+    color: var(--secondary-color);
 }
