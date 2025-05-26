@@ -5,6 +5,7 @@ const ITEMS_PER_PAGE = 33;
 const DEBOUNCE_DELAY = 300;
 let filterTimeout;
 let filteredData = [];
+let previousState = null; // Estado anterior para el botón "Volver atrás"
 
 // Elementos del DOM
 const elements = {
@@ -29,6 +30,95 @@ const showError = (message) => {
     elements.errorMessage.style.display = 'block';
     setTimeout(() => (elements.errorMessage.style.display = 'none'), 5000);
 };
+
+// Función para guardar el estado actual
+function saveCurrentState() {
+    previousState = {
+        filters: {
+            tren: elements.tren.value.trim(),
+            linia: elements.linia.value.trim(),
+            ad: elements.ad.value.trim(),
+            estacio: elements.estacio.value.trim(),
+            torn: elements.torn.value.trim(),
+            horaInici: elements.horaInici.value.trim(),
+            horaFi: elements.horaFi.value.trim()
+        },
+        filteredData: [...filteredData],
+        currentPage: currentPage
+    };
+}
+
+// Función para restaurar el estado anterior
+function restorePreviousState() {
+    if (!previousState) return;
+    
+    // Restaurar filtros
+    elements.tren.value = previousState.filters.tren;
+    elements.linia.value = previousState.filters.linia;
+    elements.ad.value = previousState.filters.ad;
+    elements.estacio.value = previousState.filters.estacio;
+    elements.torn.value = previousState.filters.torn;
+    elements.horaInici.value = previousState.filters.horaInici;
+    elements.horaFi.value = previousState.filters.horaFi;
+    
+    // Restaurar datos y página
+    filteredData = [...previousState.filteredData];
+    currentPage = previousState.currentPage;
+    
+    // Actualizar tabla y limpiar estado anterior
+    updateTable();
+    previousState = null;
+    updateBackButton();
+}
+
+// Función para crear/actualizar el botón "Volver atrás"
+function updateBackButton() {
+    let backButton = document.getElementById('backButton');
+    
+    if (previousState && !backButton) {
+        // Crear botón si no existe y hay estado anterior
+        backButton = document.createElement('button');
+        backButton.id = 'backButton';
+        backButton.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m15 18-6-6 6-6"/>
+            </svg>
+            <span>Tornar</span>
+        `;
+        
+        // Estilos iOS-like
+        backButton.style.cssText = `
+                position: absolute;
+                top: 15px;
+                left: 15px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                background: rgba(0, 122, 255, 0.1);
+                border: 1px solid #2c3e50;
+                border-radius: 20px;
+                padding: 4px 8px;
+                color: #2c3e50;
+                font-size: 14px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: ;
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                box-shadow:;
+                z-index: 10;        
+        `;
+        
+       backButton.addEventListener('click', restorePreviousState);
+        
+        // Insertar en el contenedor de resultados con posición relativa
+        elements.resultContainer.style.position = 'relative';
+        elements.resultContainer.appendChild(backButton);
+    } else if (!previousState && backButton) {
+        // Eliminar botón si no hay estado anterior
+        backButton.remove();
+    }
+}
 
 // Función genérica de fetch con manejo de error
 async function fetchJSON(url) {
@@ -83,6 +173,9 @@ async function loadData(filename = 'itinerari_LA51_2_0_1_asc_desc.json') {
         data = jsonData;
         elements.resultContainer.style.display = 'none';
         filteredData = [];
+        // Limpiar estado anterior al cargar nuevos datos
+        previousState = null;
+        updateBackButton();
         return data;
     } catch (error) {
         console.error('Error al cargar dades:', error);
@@ -132,6 +225,9 @@ function clearFilters() {
     elements.horaFi.value = '';
     elements.resultContainer.style.display = 'none';
     filteredData = [];
+    // Limpiar estado anterior
+    previousState = null;
+    updateBackButton();
     updateTable();
 }
 
@@ -376,21 +472,43 @@ function updateTable() {
             <td class="extra-col">${entry.torn}</td>
             <td class="extra-col"><a href="#" class="train-s-link" data-train="${entry.tren_s}">${entry.tren_s}</a></td>
         `;
+        
         // Listener para el enlace del tren principal
         const trainLink = row.querySelector('.train-link');
         trainLink.addEventListener('click', (e) => {
             e.preventDefault();
-            clearFilters(); // Limpiar filtros existentes
+            // Guardar estado actual antes de hacer nueva búsqueda
+            saveCurrentState();
+            // Limpiar filtros y buscar el tren específico
+            elements.tren.value = '';
+            elements.linia.value = '';
+            elements.ad.value = '';
+            elements.estacio.value = '';
+            elements.torn.value = '';
+            elements.horaInici.value = '';
+            elements.horaFi.value = '';
             elements.tren.value = entry.tren;
             filterData();
+            updateBackButton();
         });
+        
         // Listener para el enlace del tren_s
         const trainSLink = row.querySelector('.train-s-link');
         trainSLink.addEventListener('click', (e) => {
             e.preventDefault();
-            clearFilters(); // Limpiar filtros existentes
+            // Guardar estado actual antes de hacer nueva búsqueda
+            saveCurrentState();
+            // Limpiar filtros y buscar el tren específico
+            elements.tren.value = '';
+            elements.linia.value = '';
+            elements.ad.value = '';
+            elements.estacio.value = '';
+            elements.torn.value = '';
+            elements.horaInici.value = '';
+            elements.horaFi.value = '';
             elements.tren.value = entry.tren_s;
             filterData();
+            updateBackButton();
         });
 
         fragment.appendChild(row);
