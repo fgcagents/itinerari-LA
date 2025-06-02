@@ -109,7 +109,28 @@ function updateBackButton() {
                 z-index: 10;        
         `;
         
-       backButton.addEventListener('click', restorePreviousState);
+       /* // Efectos hover y active
+        backButton.addEventListener('mouseenter', () => {
+            backButton.style.background = 'rgba(0, 122, 255, 0.15)';
+            backButton.style.transform = 'translateY(-1px)';
+            backButton.style.boxShadow = '0 4px 12px rgba(0, 122, 255, 0.2)';
+        });
+        
+        backButton.addEventListener('mouseleave', () => {
+            backButton.style.background = 'rgba(0, 122, 255, 0.1)';
+            backButton.style.transform = 'translateY(0)';
+            backButton.style.boxShadow = '0 2px 8px rgba(0, 122, 255, 0.15)';
+        });
+        
+        backButton.addEventListener('mousedown', () => {
+            backButton.style.transform = 'translateY(0) scale(0.95)';
+        });
+        
+        backButton.addEventListener('mouseup', () => {
+            backButton.style.transform = 'translateY(-1px) scale(1)';
+        });*/
+        
+        backButton.addEventListener('click', restorePreviousState);
         
         // Insertar en el contenedor de resultados con posición relativa
         elements.resultContainer.style.position = 'relative';
@@ -150,9 +171,9 @@ function updateTableTitle() {
     const title = document.getElementById('table-title');
     const value = select.value;
     if (value === 'A') {
-        title.textContent = 'Trens Ascendents';
+        title.textContent = 'Ascendents';
     } else if (value === 'D') {
-        title.textContent = 'Trens Descendents';
+        title.textContent = 'Descendents';
     } else {
         title.textContent = 'Ascendents/Descendents';
     }
@@ -245,6 +266,14 @@ const sortResultsByTime = results => {
 };
 
 // Función para determinar si se debe resaltar la hora
+const greenTrains = ["M301", "L103","L105", "M303", "L109", "L111", "L106", "M302", "L110", "L112", "M304", "L116", "L814",
+                     "L163", "L165", "L167", "L169", "L171", "L173", "L856", "L164", "L166", "L168", "L170", "L172", "L174",
+                     "L176", "L858"];
+
+function shouldHighlightGreenTime(entry) {
+    return greenTrains.includes(entry.tren);
+}
+
 function shouldHighlightTime(entry) {
     const estaciones = {
         R5: ["MV", "CL", "CG"],
@@ -461,7 +490,24 @@ function updateTable() {
     itemsToShow.forEach((entry, index) => {
         const row = document.createElement('tr');
         const rowNumber = startIndex + index + 1;
-        const horaClass = shouldHighlightTime(entry) ? 'highlighted-time' : '';
+        
+        let horaClass = '';
+        if (shouldHighlightGreenTime(entry)) {
+            horaClass = 'highlighted-green';
+        } else if (shouldHighlightTime(entry)) {
+            horaClass = 'highlighted-time';
+        }
+        
+        // Agregar clase CSS para filas con línea M
+        let rowClass = '';
+        if (entry.linia === 'M') {
+            rowClass = 'linia-m-row';
+        }
+        
+        if (rowClass) {
+            row.className = rowClass;
+        }
+        
         row.innerHTML = `
             <td class="row-number">${rowNumber}</td>
             <td>${entry.ad}</td>

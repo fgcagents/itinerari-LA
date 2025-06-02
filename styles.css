@@ -33,6 +33,14 @@ h2 {
     margin-bottom: 1rem;
 }
 
+.navbar-title {
+    font-weight: 400;
+}
+
+.centered-title {
+    text-align: center;
+}
+
 .search-container {
     display: flex;
     flex-direction: column;
@@ -82,6 +90,23 @@ input:focus, select:focus {
     color: #cc220f; /* Color rojo, puedes cambiarlo al que prefieras */
     font-weight: bold;
     font-size: 0.6rem;
+}
+
+.highlighted-green {
+    background-color: #c8f7c5; /* Verd clar */
+}
+
+.linia-m-row {
+    color: #888888 !important;
+}
+
+.linia-m-row td {
+    color: #888888 !important;
+}
+
+/* Si también quieres que los enlaces mantengan el color gris */
+.linia-m-row a {
+    color: #888888 !important;
 }
 
 table {
@@ -308,7 +333,6 @@ th.row-number {
 /* Para asegurar scroll horizontal suave en móviles */
 .result-container {
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
 }
 
 a.train-link {
@@ -321,4 +345,9 @@ a.train-link {
 a.train-link:hover {
     border-bottom: 1px solid rgb(46, 46, 78);
     color: var(--secondary-color);
+}
+
+/* Add this at the end of your CSS file */
+.centered-text {
+    text-align: center;
 }
