@@ -612,4 +612,18 @@ async function init() {
     }
 }
 
+// Missatge d'avís de nova versió
+function showNewVersionAlert() {
+    const alert = document.getElementById('new-version-alert');
+    if (alert) {
+        alert.style.display = 'block';
+        document.getElementById('close-version-alert').onclick = () => {
+            alert.style.display = 'none';
+        };
+    }
+}
+
+// Mostra l’avís en carregar la pàgina
+document.addEventListener('DOMContentLoaded', showNewVersionAlert);
+
 document.addEventListener('DOMContentLoaded', init);

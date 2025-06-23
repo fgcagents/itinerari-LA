@@ -1,16 +1,6 @@
 <!DOCTYPE html>
 <html lang="ca">
 <head>
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-6CHCYVEYTN"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-
-  gtag('config', 'G-6CHCYVEYTN');
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Itinerari LA51_2 07/2023 ver.sep/2024</title>
@@ -22,7 +12,7 @@
 <body>
     <!-- Menú reutilitzable -->
     <div class="navbar">
-        <a href="index.html" style="font-weight: 400;">Itinerari LA51_2 jul/2023</a>
+        <a href="index.html" class="navbar-title">Itinerari LA51_2 jul/2023</a>
         <div class="menu-toggle" id="menu-toggle">
             <div></div>
             <div></div>
@@ -34,7 +24,7 @@
             <a href="#" data-file="itinerari_LA51_2_2_3_asc_desc.json">200/300</a>
         </div>
     </div>
-    <h1 style="text-align: center;">Servei 000/100</h1>
+    <h1 class="centered-title">Servei 000/100</h1>
     
     <div class="search-container">
         <div class="form-row">
@@ -90,7 +80,7 @@
     
     <div class="result-container" id="resultContainer">
         <table id="resultats">
-            <h2 id="table-title" style="text-align: center;">Resultats</h2>
+            <h2 id="table-title" class="centered-text">Resultats</h2>
             <thead>
                 <tr>
                     <th class="row-number">#</th>
@@ -110,10 +100,14 @@
             </tbody>
         </table>
     </div>
+    <div id="new-version-alert" style="display:none; position:fixed; top:0; left:0; width:100%; background:#007aff; color:white; text-align:center; padding:10px; z-index:9999; font-weight:bold;">
+    Nova versió LA51.2_juliol 2023_versió setembre 2024_revisió febrer 2025.
+    <button id="close-version-alert" style="margin-left:1rem; background:none; border:1px solid white; color:white; border-radius:4px; cursor:pointer;">Tancar</button>
+    </div>
     
     <footer>
-        Itinerari LA51_2 07/2023 ver.sep/2024<br>
-        J_E_O © <span id="current-year"></span>  
+        Itinerari LA51_2 07/2023 ver.sep/2024_rev. feb/2025<br>
+        J_E_O © <span id="current-year"></span>
     </footer>
     <script src="menu.js"></script> <!-- Comportament del menú -->
     <script src="script.js"></script>
