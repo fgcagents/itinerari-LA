@@ -309,7 +309,7 @@ function filterData() {
 
     currentPage = 0;
     let horaIniciMin = timeToMinutes(filters.horaInici);
-    let horaFiMin = timeToMinutesFi);
+    let horaFiMin = timeToMinutes(filters.horaFi);
 
     // Ajustar las horas para manejar correctamente los tiempos después de medianoche
     if (horaIniciMin !== null && horaIniciMin < 240) {
