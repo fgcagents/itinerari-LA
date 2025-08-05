@@ -309,7 +309,7 @@ function filterData() {
 
     currentPage = 0;
     let horaIniciMin = timeToMinutes(filters.horaInici);
-    let horaFiMin = timeToMinutes(filters.horaFi);
+    let horaFiMin = timeToMinutesFi);
 
     // Ajustar las horas para manejar correctamente los tiempos después de medianoche
     if (horaIniciMin !== null && horaIniciMin < 240) {
@@ -612,18 +612,5 @@ async function init() {
     }
 }
 
-// Missatge d'avís de nova versió
-function showNewVersionAlert() {
-    const alert = document.getElementById('new-version-alert');
-    if (alert) {
-        alert.style.display = 'block';
-        document.getElementById('close-version-alert').onclick = () => {
-            alert.style.display = 'none';
-        };
-    }
-}
-
-// Mostra l’avís en carregar la pàgina
-document.addEventListener('DOMContentLoaded', showNewVersionAlert);
 
 document.addEventListener('DOMContentLoaded', init);
